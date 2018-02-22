@@ -44,18 +44,25 @@ def exec_interactive(raddr):
     print('IP {} ...'.format(raddr))
     vendor = get_vendor(raddr)
 
-    html_defaults = ur.urlopen(DEFPASSHOST)
+    get_pass_table()
+
+
+def get_pass_table(url=DEFPASSHOST):
+    html_defaults = ur.urlopen(url)
 
     if html_defaults.code != 200:
-        print("Smth gone bad. Host [ {} ] is unreachable. \nExiting...\n".format(DEFPASSHOST))
+        print("Smth gone bad. Host [ {} ] is unreachable. \nExiting...\n".format(url))
 
     soup = BeautifulSoup(html_defaults.read(), 'lxml')
     table = soup.find('table')
     table_body = table.find('tbody')
 
-    for tr_tag in table_body.find_all('tr'):
-        print(tr_tag.text)
+    columns = []
+    for i, tr_tag in enumerate(table_body.find_all('tr')):
+        print([i for i in tr_tag.text.split('\n') if len(i) != 0])
         exit()
+        if i == 0:
+            columns.extend(tr_tag.text)
 
 
 
