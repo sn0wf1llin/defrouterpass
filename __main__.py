@@ -6,6 +6,9 @@ import re
 
 from bs4 import BeautifulSoup
 
+DEFPASSHOST = "http://www.phenoelit.org/dpl/dpl.html"
+VENDORHOST = 'http://api.macvendors.com/'
+
 
 def is_alive(raddr):
     HOST_UP = True if os.system("ping -c 1 " + raddr) is 0 else False
@@ -19,10 +22,10 @@ def get_vendor(raddr):
     s = pid.communicate()[0].decode('utf-8')
 
     MAC = re.search(r"(([a-f\d]{1,2}\:){5}[a-f\d]{1,2})", s).groups()[0]
-    print('http://api.macvendors.com/' + MAC)
 
-    vendor = ur.urlopen('http://api.macvendors.com/' + MAC).read()
-    print(f'MAC {MAC} vandor {vendor}')
+    vendor = ur.urlopen(VENDORHOST + MAC).read().decode("utf-8")
+
+    print('MAC \t{} \tvendor \t{}'.format(MAC, vendor))
 
     return vendor
 
@@ -35,26 +38,25 @@ def exec_interactive(raddr):
     """
 
     if not is_alive(raddr):
-        print(f'{raddr} is unreachable.\nExiting...\n')
+        print('{} is unreachable.\nExiting...\n'.format(raddr))
         exit()
 
-    print(f'IP {raddr} ...')
-    print(get_vendor(raddr))
-    exit()
+    print('IP {} ...'.format(raddr))
+    vendor = get_vendor(raddr)
 
-    html_defaults = ur.urlopen("http://www.phenoelit.org/dpl/dpl.html")
+    html_defaults = ur.urlopen(DEFPASSHOST)
 
     if html_defaults.code != 200:
-        print("Smth gone bad. Host [ {http://www.phenoelit.org/dpl/dpl.html} ] is unreachable. \nExiting...\n")
+        print("Smth gone bad. Host [ {} ] is unreachable. \nExiting...\n".format(DEFPASSHOST))
 
     soup = BeautifulSoup(html_defaults.read(), 'lxml')
     table = soup.find('table')
     table_body = table.find('tbody')
 
     for tr_tag in table_body.find_all('tr'):
-        pass
+        print(tr_tag.text)
+        exit()
 
-    print(soup)
 
 
 def exec_from_file(raddr):
